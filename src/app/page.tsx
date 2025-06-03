@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import debounce from 'lodash.debounce';
-import { fetchCurrentWeather, fetchForecast } from '@/lib/weather';
+import { useEffect, useState, useRef } from "react";
+import debounce from "lodash.debounce";
+import { fetchCurrentWeather, fetchForecast } from "@/lib/weather";
 import {
   getSearchHistory,
   saveSearchHistory,
   deleteSearchHistory,
-} from '@/lib/history';
+} from "@/lib/history";
 
 type Location = {
   name: string;
@@ -25,7 +25,7 @@ type WeatherData = {
 };
 
 export default function Home() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Location[]>([]);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [forecast, setForecast] = useState<any[]>([]);
@@ -36,37 +36,38 @@ export default function Home() {
     if (!q) return;
     const res = await fetch(
       `https://api.openweathermap.org/geo/1.0/direct?q=${q}&limit=5&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}`
+      // `https://api.openweathermap.org/data/2.5/weather?id=524901&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}`
     );
     const data = await res.json();
     setSuggestions(data);
   }, 500);
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setQuery(value);
-  if (!value.trim()) {
-    setSuggestions([]); // Clear suggestions when input is empty
-    return;
-  }
-  handleSearch(value);
-};
-
-// close suggestions dropdown when user clicks outside search input field
-const inputRef = useRef<HTMLDivElement>(null);
-
-useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
-      setSuggestions([]); // Close dropdown
+    const value = e.target.value;
+    setQuery(value);
+    if (!value.trim()) {
+      setSuggestions([]); // Clear suggestions when input is empty
+      return;
     }
+    handleSearch(value);
   };
 
-  document.addEventListener('mousedown', handleClickOutside);
-  return () => document.removeEventListener('mousedown', handleClickOutside);
-}, []);
+  // close suggestions dropdown when user clicks outside search input field
+  const inputRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setSuggestions([]); // Close dropdown
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSelect = async (loc: Location) => {
     const locationName = `${loc.name}, ${loc.country}`;
@@ -87,7 +88,7 @@ useEffect(() => {
       const updatedHistory = await getSearchHistory();
       setHistory(updatedHistory);
     } catch (error) {
-      console.error('Error fetching weather data:', error);
+      console.error("Error fetching weather data:", error);
     } finally {
       setLoading(false);
     }
@@ -108,7 +109,7 @@ useEffect(() => {
       setWeather(current);
       setForecast(filterForecastByDay(forecastData));
     } catch (error) {
-      console.error('Error fetching history weather data:', error);
+      console.error("Error fetching history weather data:", error);
     } finally {
       setLoading(false);
     }
@@ -122,47 +123,54 @@ useEffect(() => {
   }, []);
 
   const filterForecastByDay = (data: any[]) => {
+    // const today = new Date().toISOString().split("T")[0];
     const seenDates = new Set();
-    return data.filter((entry) => {
-      const date = entry.dt_txt.split(' ')[0];
-      if (!seenDates.has(date)) {
-        seenDates.add(date);
-        return true;
-      }
-      return false;
-    }).slice(0, 5);
+
+    return data
+      .filter((entry) => {
+        const date = entry.dt_txt.split(" ")[0];
+        // if (date === today) return false; // skip today's date
+        if (!seenDates.has(date)) {
+          seenDates.add(date);
+          return true;
+        }
+        return false;
+      })
+      .slice(0, 5);
   };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 text-white">
-      <h1 className="text-4xl font-bold mb-6 text-center text-white">Weather App</h1>
+      <h1 className="text-4xl font-bold mb-6 text-center text-white">
+        Weather App
+      </h1>
 
       {/* Search Input */}
       <div ref={inputRef} className="mb-4 relative">
-      <div className="mb-4">
-        <input
-          type="text"
-          className="w-full p-3 border border-gray-600 rounded bg-gray-700 text-white"
-          placeholder="Search for a city..."
-          value={query}
-          onChange={handleChange}
-        />
+        <div className="mb-4">
+          <input
+            type="text"
+            className="w-full p-3 border border-gray-600 rounded bg-gray-700 text-white"
+            placeholder="Search for a city..."
+            value={query}
+            onChange={handleChange}
+          />
 
-        {/* Suggestions Dropdown */}
-        {suggestions.length > 0 && (
-          <ul className="border border-gray-600 rounded mt-1 bg-gray-700 shadow-md">
-            {suggestions.map((loc, idx) => (
-              <li
-                key={idx}
-                className="p-2 hover:bg-gray-600 cursor-pointer"
-                onClick={() => handleSelect(loc)}
-              >
-                {loc.name}, {loc.country}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+          {/* Suggestions Dropdown */}
+          {suggestions.length > 0 && (
+            <ul className="border border-gray-600 rounded mt-1 bg-gray-700 shadow-md">
+              {suggestions.map((loc, idx) => (
+                <li
+                  key={idx}
+                  className="p-2 hover:bg-gray-600 cursor-pointer"
+                  onClick={() => handleSelect(loc)}
+                >
+                  {loc.name}, {loc.country}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       {/* Loading Spinner */}
@@ -176,9 +184,15 @@ useEffect(() => {
       {!loading && weather && (
         <div className="mt-6 border rounded p-4 shadow bg-gray-800">
           <h2 className="text-xl font-semibold mb-4">
-            Current Weather in {weather.name}
+            Current Weather in {weather.name} -{" "}
+            {new Date().toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
           </h2>
-        
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <img
@@ -207,7 +221,9 @@ useEffect(() => {
       {/* Forecast */}
       {!loading && forecast.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-2xl font-semibold mb-4 text-center">5-Day Forecast</h3>
+          <h3 className="text-2xl font-semibold mb-4 text-center">
+            5-Day Forecast
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {forecast.map((day, idx) => (
               <div
@@ -216,10 +232,10 @@ useEffect(() => {
               >
                 <p className="font-medium mb-2">
                   {new Date(day.dt_txt).toLocaleDateString(undefined, {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric', 
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
                   })}
                 </p>
                 <img

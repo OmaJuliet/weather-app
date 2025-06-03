@@ -1,16 +1,18 @@
 import type { BCMSEntryContentParsed } from '../content';
 import type { BCMSEntryStatuses } from '../status';
-import type { PropValueDateData } from '@thebcms/types';
 
 export interface WeatherhistoryEntryMetaItem {
     title: string;
     slug: string;
-    location?: string;
-    timestamp?: PropValueDateData;
+    humidity?: number;
+    wind?: number;
     temperature?: string;
     condition?: string;
+    condition_description?: string;
     latitude?: number;
     longitude?: number;
+    max_temp?: number;
+    min_temp?: number;
 }
 
 export interface WeatherhistoryEntryMeta {
