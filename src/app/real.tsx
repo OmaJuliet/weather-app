@@ -41,7 +41,6 @@ export default function Home() {
     setSuggestions(data);
   }, 500);
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const value = e.target.value;
   setQuery(value);
